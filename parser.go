@@ -34,7 +34,10 @@ func Parse(tokens []Token) AstNode {
 		aNode := NewAstNode(tokens[i].tokenType, tokens[i].value)
 		switch tokens[i].tokenType {
 		case keywords:
-			// fmt.Println(tokens[i].value)
+			if ifstruct.Body != nil {
+				ifstruct.Body.Arguments = append(ifstruct.Body.Arguments, aNode)
+				continue
+			}
 			astNode.Arguments = append(astNode.Arguments, aNode)
 			if tokens[i].value == "if" {
 				astNode.Arguments[j].Arguments = append(astNode.Arguments[j].Arguments, NewAstNode(condidion, "condition"))
@@ -54,9 +57,18 @@ func Parse(tokens []Token) AstNode {
 		case rightpercent:
 			isIdentifier = false
 		case lparen:
-			ifstruct.Condition = nil
+			// ifstruct.Condition = nil
+			// astNode.Arguments[j].Arguments
+			if ifstruct.Condition != nil {
+				ifstruct.Condition = nil
+				astNode.Arguments[j].Arguments = append(astNode.Arguments[j].Arguments, NewAstNode(body, "body"))
+				ifstruct.Body = astNode.Arguments[j].Arguments[1]
+			}
 			continue
 		case rparen:
+			if ifstruct.Body != nil {
+				ifstruct.Body = nil
+			}
 			continue
 		case equals:
 			i++
@@ -71,6 +83,10 @@ func Parse(tokens []Token) AstNode {
 			}
 			if ifstruct.Condition != nil {
 				ifstruct.Condition.Arguments = append(ifstruct.Condition.Arguments, aNode)
+				continue
+			}
+			if ifstruct.Body != nil {
+				ifstruct.Body.Arguments = append(ifstruct.Body.Arguments, aNode)
 				continue
 			}
 			log.Println("debug", aNode.Value, aNode.Type, aNode.Arguments)
