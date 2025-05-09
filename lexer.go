@@ -208,7 +208,9 @@ func startLexer(file string) []Token {
 				tkn.handleChar(string(splittedLine[j]), &tokens, j, lexerState.isIfStatement)
 				continue
 			}
-			tkn.word += string(splittedLine[j])
+			if splittedLine[j] != ' ' {
+				tkn.word += string(splittedLine[j])
+			}
 			tkn.checkForTokenType(&lexerState)
 			if tkn.tokenType == keywords && tkn.value != "" {
 				appendToken(tkn.word, &tokens, tkn.tokenType, j)

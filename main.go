@@ -24,6 +24,8 @@ const (
 	label
 	lparen
 	rparen
+	condidion
+	body
 )
 
 func main() {
