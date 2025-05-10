@@ -198,6 +198,7 @@ func startLexer(file string) []Token {
 		splittedLine := splittedFile[i]
 		var tkn Token
 		isQuoteOpened := false
+		isBeggining := true
 		for j := 0; j < len(splittedLine); j++ {
 			if lexerState.countNumbers && tkn.handleOperations(splittedLine, &j, i) {
 				continue
@@ -208,7 +209,11 @@ func startLexer(file string) []Token {
 				tkn.handleChar(string(splittedLine[j]), &tokens, j, lexerState.isIfStatement)
 				continue
 			}
+
 			if splittedLine[j] != ' ' {
+				isBeggining = false
+			}
+			if !isBeggining {
 				tkn.word += string(splittedLine[j])
 			}
 			tkn.checkForTokenType(&lexerState)

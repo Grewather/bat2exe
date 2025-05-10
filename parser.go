@@ -22,31 +22,34 @@ func NewAstNode(TokenType int, value string) *AstNode {
 type ifStruct struct {
 	Condition *AstNode
 	Body      *AstNode
+	Head      *AstNode
 }
 
 func Parse(tokens []Token) AstNode {
 	astNode := NewAstNode(0, "root")
 	j := 0
 	isIdentifier := false
-	// isCondition := false]
 	ifstruct := ifStruct{}
+	ifstruct.Head = astNode
+	var currentNode *AstNode
 	for i := 0; i < len(tokens); i++ {
 		aNode := NewAstNode(tokens[i].tokenType, tokens[i].value)
 		switch tokens[i].tokenType {
 		case keywords:
 			if ifstruct.Body != nil {
 				ifstruct.Body.Arguments = append(ifstruct.Body.Arguments, aNode)
+				currentNode = aNode
 				continue
 			}
 			astNode.Arguments = append(astNode.Arguments, aNode)
 			if tokens[i].value == "if" {
-				astNode.Arguments[j].Arguments = append(astNode.Arguments[j].Arguments, NewAstNode(condidion, "condition"))
-				ifstruct.Condition = astNode.Arguments[j].Arguments[0]
+				ifstruct.Head.Arguments[j].Arguments = append(ifstruct.Head.Arguments[j].Arguments, NewAstNode(condidion, "condition"))
+				ifstruct.Condition = ifstruct.Head.Arguments[j].Arguments[0]
 				continue
 			}
 			continue
 		case label:
-			astNode.Arguments = append(astNode.Arguments, aNode)
+			ifstruct.Head.Arguments = append(ifstruct.Head.Arguments, aNode)
 		case newline:
 			j++
 			continue
@@ -61,8 +64,8 @@ func Parse(tokens []Token) AstNode {
 			// astNode.Arguments[j].Arguments
 			if ifstruct.Condition != nil {
 				ifstruct.Condition = nil
-				astNode.Arguments[j].Arguments = append(astNode.Arguments[j].Arguments, NewAstNode(body, "body"))
-				ifstruct.Body = astNode.Arguments[j].Arguments[1]
+				ifstruct.Head.Arguments[j].Arguments = append(ifstruct.Head.Arguments[j].Arguments, NewAstNode(body, "body"))
+				ifstruct.Body = ifstruct.Head.Arguments[j].Arguments[1]
 			}
 			continue
 		case rparen:
@@ -74,7 +77,7 @@ func Parse(tokens []Token) AstNode {
 			i++
 			aNode.Type = text
 			aNode.Value = tokens[i].value
-			astNode.Arguments[j].Arguments[len(astNode.Arguments[j].Arguments)-1].Arguments = append(astNode.Arguments[j].Arguments[len(astNode.Arguments[j].Arguments)-1].Arguments, aNode)
+			ifstruct.Head.Arguments[j].Arguments[len(ifstruct.Head.Arguments[j].Arguments)-1].Arguments = append(ifstruct.Head.Arguments[j].Arguments[len(ifstruct.Head.Arguments[j].Arguments)-1].Arguments, aNode)
 			continue
 		default:
 			if isIdentifier {
@@ -85,13 +88,13 @@ func Parse(tokens []Token) AstNode {
 				ifstruct.Condition.Arguments = append(ifstruct.Condition.Arguments, aNode)
 				continue
 			}
-			if ifstruct.Body != nil {
-				ifstruct.Body.Arguments = append(ifstruct.Body.Arguments, aNode)
+			if ifstruct.Body != nil && currentNode != nil {
+				currentNode.Arguments = append(currentNode.Arguments, aNode)
 				continue
 			}
 			log.Println("debug", aNode.Value, aNode.Type, aNode.Arguments)
 			log.Println("debug 2", tokens[i].tokenType, tokens[i].value)
-			astNode.Arguments[j].Arguments = append(astNode.Arguments[j].Arguments, aNode)
+			ifstruct.Head.Arguments[j].Arguments = append(ifstruct.Head.Arguments[j].Arguments, aNode)
 		}
 	}
 	fmt.Println("===========\nParser\n===========")
