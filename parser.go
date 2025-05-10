@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 )
 
 type AstNode struct {
@@ -60,8 +59,6 @@ func Parse(tokens []Token) AstNode {
 		case rightpercent:
 			isIdentifier = false
 		case lparen:
-			// ifstruct.Condition = nil
-			// astNode.Arguments[j].Arguments
 			if ifstruct.Condition != nil {
 				ifstruct.Condition = nil
 				ifstruct.Head.Arguments[j].Arguments = append(ifstruct.Head.Arguments[j].Arguments, NewAstNode(body, "body"))
@@ -77,6 +74,10 @@ func Parse(tokens []Token) AstNode {
 			i++
 			aNode.Type = text
 			aNode.Value = tokens[i].value
+			if currentNode != nil {
+				currentNode.Arguments = append(currentNode.Arguments, aNode)
+				continue
+			}
 			ifstruct.Head.Arguments[j].Arguments[len(ifstruct.Head.Arguments[j].Arguments)-1].Arguments = append(ifstruct.Head.Arguments[j].Arguments[len(ifstruct.Head.Arguments[j].Arguments)-1].Arguments, aNode)
 			continue
 		default:
@@ -92,8 +93,6 @@ func Parse(tokens []Token) AstNode {
 				currentNode.Arguments = append(currentNode.Arguments, aNode)
 				continue
 			}
-			log.Println("debug", aNode.Value, aNode.Type, aNode.Arguments)
-			log.Println("debug 2", tokens[i].tokenType, tokens[i].value)
 			ifstruct.Head.Arguments[j].Arguments = append(ifstruct.Head.Arguments[j].Arguments, aNode)
 		}
 	}
